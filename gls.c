@@ -35,9 +35,6 @@ Point gridmax;
 char	*cdto;
 int	inited;
 
-#define Line(n)	(n*font->height)
-#define Col(n)	(n)
-
 int
 dirstrlencmp(Dir *a, Dir *b)
 {
@@ -49,10 +46,6 @@ dirnamecmp(Dir *a, Dir *b)
 {
 	return strcmp(a->name, b->name);
 }
-
-char msg2[] = "interrupt";
-
-int interrupted(void *v, char *msg){ if(strcmp(msg,msg2) == 0) sysfatal(""); closedisplay(display); return 1;}
 
 void
 drawbottom(char *s)
@@ -67,35 +60,6 @@ drawbottom(char *s)
 	bottom.y = screen->r.max.y-font->height;
 	draw(screen, Rpt(bottom, screen->r.max), display->white, nil, ZP);
 	string(screen, bottom, display->black, bottom, font, s);
-}
-
-void
-select3(void)
-{
-	int p, x, y;
-	Point min, max;
-
-	for(y = 0; screen->r.min.y + y * font->height < m->xy.y-font->height; ++y)
-		;
-	for(x = 0; screen->r.min.x + x * maxwid < m->xy.x-maxwid; ++x)
-		;
-//	if(x > ncol)
-//		--x;
-	p = nline*x+y;
-	min = Pt(screen->r.min.x+x*maxwid,screen->r.min.y+y*font->height);
-	max = Pt(screen->r.min.x+x*maxwid+maxwid,screen->r.min.y+y*font->height+font->height);
-//	selected = Rpt(Pt(screen->r.min.x+x*maxwid,screen->r.min.y+y*font->height),Pt(screen->r.min.x+x*maxwid+maxwid,screen->r.min.y+y*font->height+font->height));
-	selected = Rpt(min, max);
-	if(p >= nfile || selected.min.x >= gridmax.x){
-		drawbottom(smprint("nil %R %P", selected, gridmax));
-		return;
-	}
-	draw(screen, selected, grey, nil, ZP);
-	flushimage(display, 1);
-	string(screen, selected.min, display->black, selected.min, font, dir[ncol*y+x].name);
-//	drawbottom(smprint("%R", selected));
-//	drawbottom(dir[p].name);
-	drawbottom(smprint("%d %d %d %P %s\n", x, y, (ncol*y)+x, Pt(screen->r.min.x+x*maxwid,screen->r.min.y+y*font->height), dir[ncol*y+x].name));
 }
 
 void
@@ -117,13 +81,11 @@ select4(void)
 	sel = Rpt(min,max);
 	if(p >= nfile || y >= nline || x >= ncol){
 		drawbottom(smprint("nil %R %P", selected, gridmax));
-		//drawbottom("nil");
 		return;
 	}
 	draw(screen, sel, grey, nil, ZP);
 	string(screen, sel.min, display->black, sel.min, font, dir[p].name);
 	drawbottom(smprint("%d %d %d %d %P %P %s", x, y, x*y, p, min, max, dir[p].name));
-	//drawbottom(smprint("%d %d %d %s", x, y, x*y, dir[x*y].name));
 	strcpy(workdir, dir[p].name);
 }
 
@@ -131,11 +93,6 @@ select4(void)
 void
 main(int argc, char *argv[])
 {
-//	int atnotify(int (*f)(void*, char*), int in)
-	if(atnotify(interrupted, 1) < 0)
-		sysfatal("notify: %r");
-//	strcpy(workdir, ".");
-	//fd = open(".", OREAD);
 	fd = open(workdir, OREAD);
 	if(fd < 0)
 		sysfatal("open: %r");
@@ -183,19 +140,14 @@ main(int argc, char *argv[])
 		else{
 			string(screen, strpt, display->black, strpt, font, dir[i-1].name);
 		}
-//		strpt.x += maxwid;
 		strpt.y += font->height;
 		if(i % nline == 0){
-//			strpt.y += font->height;
 			strpt.y = screen->r.min.y;
 			strpt.x += maxwid;
 		}
 		flushimage(display,1);
 	}
-	if(inited == 0){
-		einit(Emouse);
-		inited = 1;
-	}
+	einit(Emouse);
 	for(;;){
 		event(&e);
 		if(m->buttons == 1)
