@@ -30,8 +30,8 @@ Image	*red;
 Image	*grey;
 Event	e;
 Mouse	*m = &e.mouse;
-Rectangle selected;
-Point gridmax;
+Rectangle	selected;
+Point	gridmax;
 char	*cdto;
 int	inited;
 
@@ -106,6 +106,8 @@ main(int argc, char *argv[])
 	if(initdraw(0,0,"gls") < 0)
 		sysfatal("initdraw: %r");
 	maxwid = stringwidth(font, tmp);
+	if(dir[0].mode & DMDIR)
+		maxwid += stringwidth(font, "/");
 	ncol = Dx(screen->r)/maxwid;
 	strpt = screen->r.min;
 	yellow = allocimagemix(display, DYellow, DWhite);
