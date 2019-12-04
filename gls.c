@@ -34,7 +34,7 @@ Channel	*drawchan;
 Mousectl	*mctl;
 Keyboardctl	*kctl;
 
-void	select4(void);
+void	select(void);
 void	redraw(void);
 
 void
@@ -51,7 +51,7 @@ Loop:
 	if(mctl == nil)
 		sysfatal("mthread mctl");
 	if(m->buttons == 1)
-		select4();
+		select();
 	goto Loop;
 }
 
@@ -98,13 +98,10 @@ drawthread(void *v)
 Loop:
 	ul = recvul(drawchan);
 	switch(ul){
-	case 1:
-		flushimage(display, 1);
-		break;
 	case 2:
 		redraw();
-		flushimage(display, 1);
 	}
+	flushimage(display, 1);
 	ul = 0;
 	goto Loop;
 }
@@ -165,7 +162,7 @@ drawbottom(char *s)
 }
 
 void
-select4(void)
+select(void)
 {
 	int i, x, y, p;
 	Point min, max;
@@ -181,15 +178,15 @@ select4(void)
 	y = (y-screen->r.min.y)/font->height;
 	p = nline*x+y;
 	sel = Rpt(min,max);
-//	if(ptinrect(m->xy, Rpt(screen->r.min, gridmax)) == 0){
 	if(p >= nfile || y >= nline || x >= ncol){
-		drawbottom(smprint("nil %R %P", sel, gridmax));
-		return;
+		drawbottom(smprint("out of boundaries sel=%R gridmax=%P", sel, gridmax));
+		goto Sendul;
 	}
 	draw(screen, sel, grey, nil, ZP);
 	string(screen, sel.min, display->black, sel.min, font, dir[p].name);
 	drawbottom(smprint("x=%d y=%d xy=%d dir[%d] sel=%R name=%s", x, y, x*y, p, sel, dir[p].name));
 	strcpy(workdir, dir[p].name);
+Sendul:
 	sendul(drawchan, 1);
 }
 
