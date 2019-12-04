@@ -31,8 +31,6 @@ Image	*grey;
 Event	e;
 Mouse	*m = &e.mouse;
 Point	gridmax;
-char	*cdto;
-int	inited;
 
 int
 dirstrlencmp(Dir *a, Dir *b)
@@ -128,11 +126,8 @@ main(int argc, char *argv[])
 		drawp.y += font->height;
 		if(dir[i-1].mode & DMDIR){
 			draw(screen, Rpt(strpt,drawp), yellow, nil, ZP);
-			tmp = smprint("%s/", dir[i-1].name);
-			if(tmp == nil)
-				sysfatal("smprint: %r");
-			string(screen, strpt, display->black, strpt, font, tmp);
-			free(tmp);
+			drawp = string(screen, strpt, display->black, strpt, font, dir[i-1].name);
+			string(screen, drawp, display->black, ZP, font, "/");
 		}
 		else if(dir[i-1].mode & 0100){
 			draw(screen, Rpt(strpt,drawp), green, nil, ZP);
