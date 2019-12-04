@@ -5,6 +5,7 @@
 #include <mouse.h>
 #include <keyboard.h>
 #include "fns.h"
+#include "dat.h"
 
 /*
 DESCRIPTION
@@ -14,26 +15,6 @@ NOTES
 TODO
 	everything
 */
-
-char	workdir[1024] = ".";
-char	*tmp;
-long	nfile;
-Dir	*dir;
-int	fd, i;
-int	maxwid;
-int	ncol;
-int	nline;
-Point	strpt;
-Point	drawp;
-Image	*yellow;
-Image	*green;
-Image	*red;
-Image	*grey;
-Mouse	*m;
-Point	gridmax;
-Channel	*drawchan;
-Mousectl	*mctl;
-Keyboardctl	*kctl;
 
 void
 mousethread(void *v)
