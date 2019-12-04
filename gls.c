@@ -30,7 +30,6 @@ Image	*red;
 Image	*grey;
 Event	e;
 Mouse	*m = &e.mouse;
-Rectangle	selected;
 Point	gridmax;
 char	*cdto;
 int	inited;
@@ -80,12 +79,12 @@ select4(void)
 	p = nline*x+y;
 	sel = Rpt(min,max);
 	if(p >= nfile || y >= nline || x >= ncol){
-		drawbottom(smprint("nil %R %P", selected, gridmax));
+		drawbottom(smprint("nil %R %P", sel, gridmax));
 		return;
 	}
 	draw(screen, sel, grey, nil, ZP);
 	string(screen, sel.min, display->black, sel.min, font, dir[p].name);
-	drawbottom(smprint("%d %d %d %d %P %P %s", x, y, x*y, p, min, max, dir[p].name));
+	drawbottom(smprint("x=%d y=%d xy=%d dir[%d] sel=%R name=%s", x, y, x*y, p, sel, dir[p].name));
 	strcpy(workdir, dir[p].name);
 }
 
