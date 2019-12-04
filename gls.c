@@ -4,6 +4,7 @@
 #include <thread.h>
 #include <mouse.h>
 #include <keyboard.h>
+#include "fns.h"
 
 /*
 DESCRIPTION
@@ -33,9 +34,6 @@ Point	gridmax;
 Channel	*drawchan;
 Mousectl	*mctl;
 Keyboardctl	*kctl;
-
-void	select(void);
-void	redraw(void);
 
 void
 mousethread(void *v)
@@ -191,11 +189,6 @@ Sendul:
 }
 
 void
-gfxsetup(void)
-{
-}
-
-void
 threadmain(int argc, char *argv[])
 {
 	fd = open(workdir, OREAD);
@@ -204,13 +197,10 @@ threadmain(int argc, char *argv[])
 	nfile = dirreadall(fd, &dir);
 	if(nfile < 0)
 		sysfatal("dirreadall: %r");
-	qsort(dir, nfile, sizeof *dir, (int(*)(void*,void*))dirstrlencmp);
-	tmp = smprint("%s ", dir[0].name);
-	if(tmp == nil)
-		sysfatal("smprint: %r");
+	qsort(dir, nfile, sizeof *dir, (Cmp*)dirstrlencmp);
 	if(initdraw(0,0,"gls") < 0)
 		sysfatal("initdraw: %r");
-	maxwid = stringwidth(font, tmp);
+	maxwid = stringwidth(font, dir[0].name) + stringwidth(font, " ");
 	if(dir[0].mode & DMDIR)
 		maxwid += stringwidth(font, "/");
 	ncol = Dx(screen->r)/maxwid;
@@ -221,7 +211,7 @@ threadmain(int argc, char *argv[])
 	green = allocimagemix(display, DGreen, DWhite);
 	gridmax.x = screen->r.min.x + ncol * maxwid;
 	gridmax.y = screen->r.min.y + nline * font->height;
-	qsort(dir, nfile, sizeof *dir, (int(*)(void*,void*))dirnamecmp);
+	qsort(dir, nfile, sizeof *dir, (Cmp*)dirnamecmp);
 	mctl = initmouse("/dev/mouse", nil);
 	if(mctl == nil)
 		sysfatal("initmouse: %r");
