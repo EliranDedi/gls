@@ -35,6 +35,37 @@ Loop:
 }
 
 void
+newdata(void)
+{
+	if(dir != nil)
+		free(dir);
+	if(fd > 0)
+		close(fd);
+	dir = nil;
+	fd = -1;
+//	print("opening %s\n", workdir);
+	fd = open(workdir, OREAD);
+	if(fd < 0)
+		sysfatal("open: %r");
+	nfile = dirreadall(fd, &dir);
+	if(nfile < 0)
+		sysfatal("dirreadall: %r");
+	qsort(dir, nfile, sizeof *dir, (Cmp*)dirstrlencmp);
+	maxwid = stringwidth(font, dir[0].name) + stringwidth(font, " ");
+	if(dir[0].mode & DMDIR)
+		maxwid += stringwidth(font, "/");
+	ncol = Dx(screen->r)/maxwid;
+	nline = 0;
+	strpt = screen->r.min;
+	qsort(dir, nfile, sizeof *dir, (Cmp*)dirnamecmp);
+	for(i = nfile; i > ncol; i -= ncol)
+		nline++;
+	if(i > 0)
+		nline++;
+	redraw();
+}
+
+void
 resizethread(void *v)
 {
 	Mousectl *mctl = v;
@@ -88,6 +119,7 @@ Loop:
 void
 redraw(void)
 {
+	draw(screen, screen->r, display->white, nil, ZP);
 	strpt = screen->r.min;
 	for(i = 1; i < nfile+1; ++i){
 		drawp = strpt;
@@ -164,7 +196,12 @@ select(void)
 	draw(screen, sel, grey, nil, ZP);
 	string(screen, sel.min, display->black, sel.min, font, dir[p].name);
 	drawbottom(smprint("x=%d y=%d xy=%d dir[%d] sel=%R name=%s", x, y, x*y, p, sel, dir[p].name));
-	strcpy(workdir, dir[p].name);
+	if(dir[p].mode & DMDIR){
+		snprint(workdir, sizeof workdir, "%s/%s", workdir, dir[p].name);
+		if(chdir(workdir) < 0)
+			sysfatal("chdir: %r");
+		newdata();
+	}
 Sendul:
 	sendul(drawchan, 1);
 }
@@ -172,6 +209,7 @@ Sendul:
 void
 threadmain(int argc, char *argv[])
 {
+	getwd(workdir, sizeof workdir);
 	fd = open(workdir, OREAD);
 	if(fd < 0)
 		sysfatal("open: %r");
